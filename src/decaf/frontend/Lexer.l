@@ -80,6 +80,8 @@ WHITESPACE			= ([ \t]+)
 "!="				{ return operator(Parser.NOT_EQUAL);	}
 "&&"				{ return operator(Parser.AND);			}
 "||"				{ return operator(Parser.OR);			}
+"++"				{ return operator(Parser.SELF_PLUS);	}
+"--"				{ return operator(Parser.SELF_MINUS);	}
 {SIMPLE_OPERATOR}	{ return operator((int)yycharat(0));	}
 
 	// 识别常数的规则

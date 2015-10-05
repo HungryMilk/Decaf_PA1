@@ -33,6 +33,7 @@ import java.util.*;
 %token LESS_EQUAL   GREATER_EQUAL  EQUAL   NOT_EQUAL
 %token '+'  '-'  '*'  '/'  '%'  '='  '>'  '<'  '.'
 %token ','  ';'  '!'  '('  ')'  '['  ']'  '{'  '}'
+%token SELF_PLUS    SELF_MINUS
 
 %left OR
 %left AND 
@@ -41,6 +42,7 @@ import java.util.*;
 %left  '+' '-'
 %left  '*' '/' '%'  
 %nonassoc UMINUS '!' 
+%nonassoc SELF_PLUS SELF_MINUS
 %nonassoc '[' '.' 
 %nonassoc ')' EMPTY
 %nonassoc ELSE
@@ -338,6 +340,22 @@ Expr            :	LValue
                 	{
                 		$$.expr = new Tree.TypeCast($3.ident, $5.expr, $5.loc);
                 	} 
+                |   IDENTIFIER SELF_PLUS
+                    {
+                        $$.expr = new Tree.Unary(Tree.SELFPLUS, $1.expr, $2.loc);
+                    }
+                |   SELF_PLUS IDENTIFIER
+                    {
+                        $$.expr = new Tree.Unary(Tree.SELFPLUS, $2.expr, $1.loc);
+                    }
+                |   IDENTIFIER SELF_MINUS
+                    {
+                        $$.expr = new Tree.Unary(Tree.SELFMINUS, $1.expr, $2.loc);
+                    }
+                |   SELF_MINUS IDENTIFIER
+                    {
+                        $$.expr = new Tree.Unary(Tree.SELFMINUS, $2.expr, $1.loc);
+                    }
                 ;
 	
 Constant        :	LITERAL
