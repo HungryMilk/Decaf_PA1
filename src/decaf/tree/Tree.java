@@ -193,11 +193,14 @@ public abstract class Tree {
      * Type test expressions, of type TypeTest.
      */
     public static final int TYPETEST = TYPECAST + 1;
-
+    /**
+     * Numinstances expressions, of type Numinstances
+     */
+    public static final int NUMINSTANCES = TYPETEST + 1;
     /**
      * Indexed array expressions, of type Indexed.
      */
-    public static final int INDEXED = TYPETEST + 1;
+    public static final int INDEXED = NUMINSTANCES + 1;
 
     /**
      * Selections, of type Select.
@@ -283,8 +286,12 @@ public abstract class Tree {
     public static final int MUL = MINUS + 1;
     public static final int DIV = MUL + 1;
     public static final int MOD = DIV + 1;
-
-    public static final int NULL = MOD + 1;
+    /**
+     * Ternary operators, of type Ternary
+     */
+    public static final int TERNARY = MOD+1;
+    
+    public static final int NULL = TERNARY + 1;
     public static final int CALLEXPR = NULL + 1;
     public static final int THISEXPR = CALLEXPR + 1;
     public static final int READINTEXPR = THISEXPR + 1;
@@ -973,7 +980,38 @@ public abstract class Tree {
     		}
     	}
     }
-
+    /**
+     * A ternary operation.
+     */
+    public static class Ternary extends Expr {
+    	public Expr left;
+    	public Expr middle;
+    	public Expr right;
+		public Ternary(int kind, Expr left, Expr middle, Expr right, Location loc) {
+			super(kind, loc);
+			this.left = left;
+    		this.middle = middle;
+    		this.right = right;
+		}
+		@Override
+        public void accept(Visitor visitor) {
+    		visitor.visitTernary(this);
+    	}
+		@Override
+        public void printTo(IndentPrintWriter pw) {
+        	switch(tag) {
+        	case TERNARY:
+        		pw.println("cond");
+        		pw.incIndent();
+        		left.printTo(pw);
+        		middle.printTo(pw);
+        		right.printTo(pw);
+        		pw.decIndent();
+    			break;
+        	}
+        }
+    	
+    }
     public static class CallExpr extends Expr {
 
     	public Expr receiver;
@@ -1122,7 +1160,30 @@ public abstract class Tree {
     		pw.decIndent();
     	}
     }
-
+    /**
+     * numinstances expression
+     */
+    public static class Numinstances extends Expr {
+    	
+    	public String className;
+		public Numinstances(String className, Location loc) {
+			super(NUMINSTANCES, loc);
+			this.className = className;
+		}
+		@Override
+        public void accept(Visitor v) {
+            v.visitNuminstances(this);
+        }
+		@Override
+    	public void printTo(IndentPrintWriter pw) {
+    		pw.println("numinstances");
+    		pw.incIndent();
+    		//instance.printTo(pw);
+    		pw.println(className);
+    		pw.decIndent();
+    	}
+    	
+    }
     /**
       * An array selection
       */
@@ -1402,6 +1463,10 @@ public abstract class Tree {
         public void visitBinary(Binary that) {
             visitTree(that);
         }
+        
+        public void visitTernary(Ternary that) {
+            visitTree(that);
+        }
 
         public void visitCallExpr(CallExpr that) {
             visitTree(that);
@@ -1434,7 +1499,10 @@ public abstract class Tree {
         public void visitTypeTest(TypeTest that) {
             visitTree(that);
         }
-
+        
+        public void visitNuminstances(Numinstances that) {
+        	visitTree(that);
+        }
         public void visitIndexed(Indexed that) {
             visitTree(that);
         }

@@ -29,12 +29,13 @@ import java.util.*;
 %token IF     ELSE        RETURN   BREAK   NEW
 %token PRINT  READ_INTEGER         READ_LINE
 %token LITERAL
-%token IDENTIFIER	  AND    OR    UMINUS STATIC  INSTANCEOF
+%token IDENTIFIER	  AND    OR    UMINUS STATIC  INSTANCEOF NUMINSTANCES
 %token LESS_EQUAL   GREATER_EQUAL  EQUAL   NOT_EQUAL
 %token SELF_PLUS SELF_MINUS
 %token '+'  '-'  '*'  '/'  '%'  '='  '>'  '<'  '.'
 %token ','  ';'  '!'  '('  ')'  '['  ']'  '{'  '}'
 
+%nonassoc '?' ':'
 %left OR
 %left AND
 %nonassoc EQUAL NOT_EQUAL
@@ -328,6 +329,10 @@ Expr            :	LValue
                     {
                         $$.expr = new Tree.Unary(Tree.NOT, $2.expr, $1.loc);
                     }
+                |   Expr '?' Expr ':' Expr
+                    {
+                        $$.expr = new Tree.Ternary(Tree.TERNARY, $1.expr, $3.expr, $5.expr, $1.loc);
+                    }
                 |   READ_INTEGER '(' ')'
                     {
                         $$.expr = new Tree.ReadIntExpr($1.loc);
@@ -351,6 +356,10 @@ Expr            :	LValue
                 |   INSTANCEOF '(' Expr ',' IDENTIFIER ')'
                     {
                         $$.expr = new Tree.TypeTest($3.expr, $5.ident, $1.loc);
+                    }
+                |   NUMINSTANCES '(' IDENTIFIER ')'
+                    {
+                        $$.expr = new Tree.Numinstances($3.ident, $1.loc);
                     }
                 |   '(' CLASS IDENTIFIER ')' Expr
                     {
