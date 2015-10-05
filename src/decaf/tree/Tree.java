@@ -255,8 +255,6 @@ public abstract class Tree {
     public static final int PREDEC = PREINC + 1;
     public static final int POSTINC = PREDEC + 1;
     public static final int POSTDEC = POSTINC + 1;
-    public static final int SELFPLUS = POSTDEC + 1;
-    public static final int SELFMINUS = SELFPLUS + 1;
 
     /**
      * unary operator for null reference checks, only used internally.
@@ -887,11 +885,18 @@ public abstract class Tree {
     		case NOT:
     			unaryOperatorToString(pw, "not");
     			break;
-    		case SELFMINUS:
-    			unaryOperatorToString(pw, "selfminus");
+    		case POSTINC:
+    			unaryOperatorToString(pw, "postinc");
     			break;
-    		case SELFPLUS:
-    			unaryOperatorToString(pw, "selfplus");
+    		case POSTDEC:
+    			unaryOperatorToString(pw, "postdec");
+    			break;
+    		case PREINC:
+    			unaryOperatorToString(pw, "preinc");
+    			break;
+    		case PREDEC:
+    			unaryOperatorToString(pw, "predec");
+    			break;
 			}
     	}
    }

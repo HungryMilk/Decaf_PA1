@@ -24,26 +24,26 @@ import java.util.*;
 %Jnodebug
 %Jnoconstruct
 
-%token VOID   BOOL  INT   STRING  CLASS 
-%token NULL   EXTENDS     THIS     WHILE   FOR   
+%token VOID   BOOL  INT   STRING  CLASS
+%token NULL   EXTENDS     THIS     WHILE   FOR
 %token IF     ELSE        RETURN   BREAK   NEW
 %token PRINT  READ_INTEGER         READ_LINE
 %token LITERAL
-%token IDENTIFIER	  AND    OR    STATIC  INSTANCEOF
+%token IDENTIFIER	  AND    OR    UMINUS STATIC  INSTANCEOF
 %token LESS_EQUAL   GREATER_EQUAL  EQUAL   NOT_EQUAL
+%token SELF_PLUS SELF_MINUS
 %token '+'  '-'  '*'  '/'  '%'  '='  '>'  '<'  '.'
 %token ','  ';'  '!'  '('  ')'  '['  ']'  '{'  '}'
-%token SELF_PLUS    SELF_MINUS
 
 %left OR
-%left AND 
+%left AND
 %nonassoc EQUAL NOT_EQUAL
 %nonassoc LESS_EQUAL GREATER_EQUAL '<' '>'
 %left  '+' '-'
-%left  '*' '/' '%'  
-%nonassoc UMINUS '!' 
+%left  '*' '/' '%'
+%nonassoc UMINUS '!'
 %nonassoc SELF_PLUS SELF_MINUS
-%nonassoc '[' '.' 
+%nonassoc '[' '.'
 %nonassoc ')' EMPTY
 %nonassoc ELSE
 
@@ -243,118 +243,118 @@ Call            :	Receiver IDENTIFIER '(' Actuals ')'
                 ;
 
 Expr            :	LValue
-					{
-						$$.expr = $1.lvalue;
-					}
-                |	Call
-                |	Constant
-                |	Expr '+' Expr
-                	{
-                		$$.expr = new Tree.Binary(Tree.PLUS, $1.expr, $3.expr, $2.loc);
-                	}
-                |	Expr '-' Expr
-                	{
-                		$$.expr = new Tree.Binary(Tree.MINUS, $1.expr, $3.expr, $2.loc);
-                	}
-                |	Expr '*' Expr
-                	{
-                		$$.expr = new Tree.Binary(Tree.MUL, $1.expr, $3.expr, $2.loc);
-                	}
-                |	Expr '/' Expr
-                	{
-                		$$.expr = new Tree.Binary(Tree.DIV, $1.expr, $3.expr, $2.loc);
-                	}
-                |	Expr '%' Expr
-                	{
-                		$$.expr = new Tree.Binary(Tree.MOD, $1.expr, $3.expr, $2.loc);
-                	}
-                |	Expr EQUAL Expr
-                	{
-                		$$.expr = new Tree.Binary(Tree.EQ, $1.expr, $3.expr, $2.loc);
-                	}
-                |	Expr NOT_EQUAL Expr
-                	{
-                		$$.expr = new Tree.Binary(Tree.NE, $1.expr, $3.expr, $2.loc);
-                	}
-                |	Expr '<' Expr
-                	{
-                		$$.expr = new Tree.Binary(Tree.LT, $1.expr, $3.expr, $2.loc);
-                	}
-                |	Expr '>' Expr
-                	{
-                		$$.expr = new Tree.Binary(Tree.GT, $1.expr, $3.expr, $2.loc);
-                	}
-                |	Expr LESS_EQUAL Expr
-                	{
-                		$$.expr = new Tree.Binary(Tree.LE, $1.expr, $3.expr, $2.loc);
-                	}
-                |	Expr GREATER_EQUAL Expr
-                	{
-                		$$.expr = new Tree.Binary(Tree.GE, $1.expr, $3.expr, $2.loc);
-                	}
-                |	Expr AND Expr
-                	{
-                		$$.expr = new Tree.Binary(Tree.AND, $1.expr, $3.expr, $2.loc);
-                	}
-                |	Expr OR Expr
-                	{
-                		$$.expr = new Tree.Binary(Tree.OR, $1.expr, $3.expr, $2.loc);
-                	}
-                |	'(' Expr ')'
-                	{
-                		$$ = $2;
-                	}
-                |	'-' Expr  				%prec UMINUS
-                	{
-                		$$.expr = new Tree.Unary(Tree.NEG, $2.expr, $1.loc);
-                	}
-                |	'!' Expr
-                	{
-                		$$.expr = new Tree.Unary(Tree.NOT, $2.expr, $1.loc);
-                	}
-                |	READ_INTEGER '(' ')'
-                	{
-                		$$.expr = new Tree.ReadIntExpr($1.loc);
-                	}
-                |	READ_LINE '(' ')'
-                	{
-                		$$.expr = new Tree.ReadLineExpr($1.loc);
-                	}
-                |	THIS
-                	{
-                		$$.expr = new Tree.ThisExpr($1.loc);
-                	}
-                |	NEW IDENTIFIER '(' ')'
-                	{
-                		$$.expr = new Tree.NewClass($2.ident, $1.loc);
-                	}
-                |	NEW Type '[' Expr ']'
-                	{
-                		$$.expr = new Tree.NewArray($2.type, $4.expr, $1.loc);
-                	}
-                |	INSTANCEOF '(' Expr ',' IDENTIFIER ')'
-                	{
-                		$$.expr = new Tree.TypeTest($3.expr, $5.ident, $1.loc);
-                	}
-                |	'(' CLASS IDENTIFIER ')' Expr
-                	{
-                		$$.expr = new Tree.TypeCast($3.ident, $5.expr, $5.loc);
-                	} 
-                |   IDENTIFIER SELF_PLUS
                     {
-                        $$.expr = new Tree.Unary(Tree.SELFPLUS, $1.expr, $2.loc);
+                        $$.expr = $1.lvalue;
                     }
-                |   SELF_PLUS IDENTIFIER
+                |   Call
+                |   Constant
+                |   SELF_PLUS Expr
                     {
-                        $$.expr = new Tree.Unary(Tree.SELFPLUS, $2.expr, $1.loc);
+                        $$.expr = new Tree.Unary(Tree.PREINC, $2.expr, $1.loc);
                     }
-                |   IDENTIFIER SELF_MINUS
+                |   SELF_MINUS Expr
                     {
-                        $$.expr = new Tree.Unary(Tree.SELFMINUS, $1.expr, $2.loc);
+                        $$.expr = new Tree.Unary(Tree.PREDEC, $2.expr, $1.loc);
                     }
-                |   SELF_MINUS IDENTIFIER
+                |   Expr SELF_PLUS
                     {
-                        $$.expr = new Tree.Unary(Tree.SELFMINUS, $2.expr, $1.loc);
+                        $$.expr = new Tree.Unary(Tree.POSTINC, $1.expr, $2.loc);
+                    }
+                |   Expr SELF_MINUS
+                    {
+                        $$.expr = new Tree.Unary(Tree.POSTDEC, $1.expr, $2.loc);
+                    }
+                |   Expr '+' Expr
+                    {
+                        $$.expr = new Tree.Binary(Tree.PLUS, $1.expr, $3.expr, $2.loc);
+                    }
+                |   Expr '-' Expr
+                    {
+                        $$.expr = new Tree.Binary(Tree.MINUS, $1.expr, $3.expr, $2.loc);
+                    }
+                |   Expr '*' Expr
+                    {
+                        $$.expr = new Tree.Binary(Tree.MUL, $1.expr, $3.expr, $2.loc);
+                    }
+                |   Expr '/' Expr
+                    {
+                        $$.expr = new Tree.Binary(Tree.DIV, $1.expr, $3.expr, $2.loc);
+                    }
+                |   Expr '%' Expr
+                    {
+                        $$.expr = new Tree.Binary(Tree.MOD, $1.expr, $3.expr, $2.loc);
+                    }
+                |   Expr EQUAL Expr
+                    {
+                        $$.expr = new Tree.Binary(Tree.EQ, $1.expr, $3.expr, $2.loc);
+                    }
+                |   Expr NOT_EQUAL Expr
+                    {
+                        $$.expr = new Tree.Binary(Tree.NE, $1.expr, $3.expr, $2.loc);
+                    }
+                |   Expr '<' Expr
+                    {
+                        $$.expr = new Tree.Binary(Tree.LT, $1.expr, $3.expr, $2.loc);
+                    }
+                |   Expr '>' Expr
+                    {
+                        $$.expr = new Tree.Binary(Tree.GT, $1.expr, $3.expr, $2.loc);
+                    }
+                |   Expr LESS_EQUAL Expr
+                    {
+                        $$.expr = new Tree.Binary(Tree.LE, $1.expr, $3.expr, $2.loc);
+                    }
+                |   Expr GREATER_EQUAL Expr
+                    {
+                        $$.expr = new Tree.Binary(Tree.GE, $1.expr, $3.expr, $2.loc);
+                    }
+                |   Expr AND Expr
+                    {
+                        $$.expr = new Tree.Binary(Tree.AND, $1.expr, $3.expr, $2.loc);
+                    }
+                |   Expr OR Expr
+                    {
+                        $$.expr = new Tree.Binary(Tree.OR, $1.expr, $3.expr, $2.loc);
+                    }
+                |   '(' Expr ')'
+                    {
+                        $$ = $2;
+                    }
+                |   '-' Expr                %prec UMINUS
+                    {
+                        $$.expr = new Tree.Unary(Tree.NEG, $2.expr, $1.loc);
+                    }
+                |   '!' Expr
+                    {
+                        $$.expr = new Tree.Unary(Tree.NOT, $2.expr, $1.loc);
+                    }
+                |   READ_INTEGER '(' ')'
+                    {
+                        $$.expr = new Tree.ReadIntExpr($1.loc);
+                    }
+                |   READ_LINE '(' ')'
+                    {
+                        $$.expr = new Tree.ReadLineExpr($1.loc);
+                    }
+                |   THIS
+                    {
+                        $$.expr = new Tree.ThisExpr($1.loc);
+                    }
+                |   NEW IDENTIFIER '(' ')'
+                    {
+                        $$.expr = new Tree.NewClass($2.ident, $1.loc);
+                    }
+                |   NEW Type '[' Expr ']'
+                    {
+                        $$.expr = new Tree.NewArray($2.type, $4.expr, $1.loc);
+                    }
+                |   INSTANCEOF '(' Expr ',' IDENTIFIER ')'
+                    {
+                        $$.expr = new Tree.TypeTest($3.expr, $5.ident, $1.loc);
+                    }
+                |   '(' CLASS IDENTIFIER ')' Expr
+                    {
+                        $$.expr = new Tree.TypeCast($3.ident, $5.expr, $5.loc);
                     }
                 ;
 	

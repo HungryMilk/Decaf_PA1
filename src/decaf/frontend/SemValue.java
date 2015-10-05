@@ -219,6 +219,19 @@ public class SemValue {
 		case Parser.OR:
 			msg = "operator : ||";
 			break;
+		
+		case Parser.SELF_PLUS:
+			msg = "operator : ++";
+			break;
+		case Parser.SELF_MINUS:
+			msg = "operator : --";
+			break;
+		/*case Parser.PREINC:
+			msg = "operator : ++";
+			break;
+		case Parser.PREDEC:
+			msg = "operator : --";
+			break;*/
 		default:
 			msg = "operator : " + (char) code;
 			break;
