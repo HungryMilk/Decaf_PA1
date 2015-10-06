@@ -93,11 +93,19 @@ public abstract class Tree {
      * Labelled statements, of type Labelled.
      */
     public static final int LABELLED = FORLOOP + 1;
-
+    /**
+     * Guardedif statements, of type Guardedif
+     */
+    public static final int GUARDIF = LABELLED + 1;
+    /**
+     * GuardedDo statements, of type GuardedDo
+     */
+    public static final int GUARDDO = GUARDIF + 1;
+    public static final int GUARD = GUARDDO + 1;
     /**
      * Switch statements, of type Switch.
      */
-    public static final int SWITCH = LABELLED + 1;
+    public static final int SWITCH = GUARD + 1;
 
     /**
      * Case parts in switch statements, of type Case.
@@ -659,7 +667,77 @@ public abstract class Tree {
     		pw.println("break");
     	}
     }
-
+    /**
+     * A guardedIf statement
+     */
+    public static class Guardedif extends Tree {
+    	public List<Tree> GuardedStmts;
+    	public Guardedif(List<Tree> stmts, Location loc) {
+			super(GUARDIF, loc);
+			this.GuardedStmts = stmts;
+		}
+    	@Override
+        public void accept(Visitor v) {
+            v.visitGuardedIf(this);
+        }
+		@Override
+		public void printTo(IndentPrintWriter pw) {
+			pw.println("guardedif");
+    		pw.incIndent();
+    		for (Tree s : GuardedStmts) {
+    			s.printTo(pw);
+    		}
+    		pw.decIndent();
+		}
+    }
+    /**
+     * A guardedDo statement
+     */
+    public static class GuardedDo extends Tree {
+    	public List<Tree> GuardedStmts;
+    	public GuardedDo(List<Tree> stmts, Location loc) {
+			super(GUARDDO, loc);
+			this.GuardedStmts = stmts;
+		}
+    	@Override
+        public void accept(Visitor v) {
+            v.visitGuardedDo(this);
+        }
+		@Override
+		public void printTo(IndentPrintWriter pw) {
+			pw.println("guardeddo");
+    		pw.incIndent();
+    		for (Tree s : GuardedStmts) {
+    			s.printTo(pw);
+    		}
+    		pw.decIndent();
+		}
+    }
+    /**
+     * A guarded statement
+     */
+    public static class GuardedStmt extends Tree {
+    	public Expr expr;
+    	public Tree stmt;
+		public GuardedStmt(Expr expr, Tree stmt, Location loc) {
+			super(GUARD, loc);
+			this.expr = expr;
+			this.stmt = stmt;
+		}
+		@Override
+		public void printTo(IndentPrintWriter pw) {
+			pw.println("guardedstmt");
+			pw.incIndent();
+			expr.printTo(pw);
+			stmt.printTo(pw);
+			pw.decIndent();
+		}
+		@Override
+        public void accept(Visitor v) {
+            v.visitGuardedStmt(this);
+        }
+    	
+    }
     /**
       * A return statement.
       */
@@ -1427,7 +1505,19 @@ public abstract class Tree {
         public void visitIf(If that) {
             visitTree(that);
         }
-
+        
+        public void visitGuardedIf(Guardedif that) {
+            visitTree(that);
+        }
+        
+        public void visitGuardedDo(GuardedDo that) {
+            visitTree(that);
+        }
+        
+        public void visitGuardedStmt(GuardedStmt that) {
+            visitTree(that);
+        }
+        
         public void visitExec(Exec that) {
             visitTree(that);
         }

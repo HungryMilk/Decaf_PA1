@@ -73,6 +73,9 @@ WHITESPACE			= ([ \t]+)
 "static"			{ return keyword(Parser.STATIC);		}
 "instanceof"		{ return keyword(Parser.INSTANCEOF);	}
 "numinstances"		{ return keyword(Parser.NUMINSTANCES);	}
+"fi"				{ return keyword(Parser.FI);			}
+"do"				{ return keyword(Parser.DO);			}
+"od"				{ return keyword(Parser.OD);			}
 
 	// 识别操作符的规则
 "<="				{ return operator(Parser.LESS_EQUAL);	}
@@ -83,6 +86,7 @@ WHITESPACE			= ([ \t]+)
 "||"				{ return operator(Parser.OR);			}
 "++"				{ return operator(Parser.SELF_PLUS);	}
 "--"				{ return operator(Parser.SELF_MINUS);	}
+"|||"				{ return operator(Parser.GUARD);		}
 {SIMPLE_OPERATOR}	{ return operator((int)yycharat(0));	}
 
 	// 识别常数的规则

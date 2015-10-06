@@ -26,7 +26,7 @@ import java.util.*;
 
 %token VOID   BOOL  INT   STRING  CLASS
 %token NULL   EXTENDS     THIS     WHILE   FOR
-%token IF     ELSE        RETURN   BREAK   NEW
+%token IF     ELSE        RETURN   BREAK   NEW  
 %token PRINT  READ_INTEGER         READ_LINE
 %token LITERAL
 %token IDENTIFIER	  AND    OR    UMINUS STATIC  INSTANCEOF NUMINSTANCES
@@ -46,6 +46,7 @@ import java.util.*;
 %nonassoc SELF_PLUS SELF_MINUS
 %nonassoc '[' '.'
 %nonassoc ')' EMPTY
+%nonassoc FI DO OD GUARD
 %nonassoc ELSE
 
 %start Program
@@ -198,6 +199,8 @@ Stmt		    :	VariableDef
                 |	PrintStmt ';'
                 |	BreakStmt ';'
                 |	StmtBlock
+                |   GuardedIfStmt
+                |   GuardedDoStmt
                 ;
 
 SimpleStmt      :	LValue '=' Expr
@@ -214,36 +217,36 @@ SimpleStmt      :	LValue '=' Expr
                 	}
                 ;
 
-Receiver     	:	Expr '.'
-                |	/* empty */
-                	{
-                		$$ = new SemValue();
-                	}
+Receiver        :   Expr '.'
+                |   /* empty */
+                    {
+                        $$ = new SemValue();
+                    }
                 ; 
 
-LValue          :	Receiver IDENTIFIER
-					{
-						$$.lvalue = new Tree.Ident($1.expr, $2.ident, $2.loc);
-						if ($1.loc == null) {
-							$$.loc = $2.loc;
-						}
-					}
-                |	Expr '[' Expr ']'
-                	{
-                		$$.lvalue = new Tree.Indexed($1.expr, $3.expr, $1.loc);
-                	}
+LValue          :   Receiver IDENTIFIER
+                    {
+                        $$.lvalue = new Tree.Ident($1.expr, $2.ident, $2.loc);
+                        if ($1.loc == null) {
+                            $$.loc = $2.loc;
+                        }
+                    }
+                |   Expr '[' Expr ']'
+                    {
+                        $$.lvalue = new Tree.Indexed($1.expr, $3.expr, $1.loc);
+                    }
                 ;
 
-Call            :	Receiver IDENTIFIER '(' Actuals ')'
-					{
-						$$.expr = new Tree.CallExpr($1.expr, $2.ident, $4.elist, $2.loc);
-						if ($1.loc == null) {
-							$$.loc = $2.loc;
-						}
-					}
+Call            :   Receiver IDENTIFIER '(' Actuals ')'
+                    {
+                        $$.expr = new Tree.CallExpr($1.expr, $2.ident, $4.elist, $2.loc);
+                        if ($1.loc == null) {
+                            $$.loc = $2.loc;
+                        }
+                    }
                 ;
 
-Expr            :	LValue
+Expr            :   LValue
                     {
                         $$.expr = $1.lvalue;
                     }
@@ -366,97 +369,125 @@ Expr            :	LValue
                         $$.expr = new Tree.TypeCast($3.ident, $5.expr, $5.loc);
                     }
                 ;
-	
-Constant        :	LITERAL
-					{
-						$$.expr = new Tree.Literal($1.typeTag, $1.literal, $1.loc);
-					}
-                |	NULL
-                	{
-						$$.expr = new Null($1.loc);
-					}
+    
+Constant        :   LITERAL
+                    {
+                        $$.expr = new Tree.Literal($1.typeTag, $1.literal, $1.loc);
+                    }
+                |   NULL
+                    {
+                        $$.expr = new Null($1.loc);
+                    }
                 ;
 
-Actuals         :	ExprList
-                |	/* empty */
-                	{
-                		$$ = new SemValue();
-                		$$.elist = new ArrayList<Tree.Expr>();
-                	}
+Actuals         :   ExprList
+                |   /* empty */
+                    {
+                        $$ = new SemValue();
+                        $$.elist = new ArrayList<Tree.Expr>();
+                    }
                 ;
 
-ExprList        :	ExprList ',' Expr
-					{
-						$$.elist.add($3.expr);
-					}
-                |	Expr
-                	{
-                		$$.elist = new ArrayList<Tree.Expr>();
-						$$.elist.add($1.expr);
-                	}
+ExprList        :   ExprList ',' Expr
+                    {
+                        $$.elist.add($3.expr);
+                    }
+                |   Expr
+                    {
+                        $$.elist = new ArrayList<Tree.Expr>();
+                        $$.elist.add($1.expr);
+                    }
                 ;
     
-WhileStmt       :	WHILE '(' Expr ')' Stmt
-					{
-						$$.stmt = new Tree.WhileLoop($3.expr, $5.stmt, $1.loc);
-					}
+WhileStmt       :   WHILE '(' Expr ')' Stmt
+                    {
+                        $$.stmt = new Tree.WhileLoop($3.expr, $5.stmt, $1.loc);
+                    }
                 ;
 
-ForStmt         :	FOR '(' SimpleStmt ';' Expr ';'	SimpleStmt ')' Stmt
-					{
-						$$.stmt = new Tree.ForLoop($3.stmt, $5.expr, $7.stmt, $9.stmt, $1.loc);
-					}
+ForStmt         :   FOR '(' SimpleStmt ';' Expr ';' SimpleStmt ')' Stmt
+                    {
+                        $$.stmt = new Tree.ForLoop($3.stmt, $5.expr, $7.stmt, $9.stmt, $1.loc);
+                    }
                 ;
 
-BreakStmt       :	BREAK
-					{
-						$$.stmt = new Tree.Break($1.loc);
-					}
+BreakStmt       :   BREAK
+                    {
+                        $$.stmt = new Tree.Break($1.loc);
+                    }
                 ;
 
-IfStmt          :	IF '(' Expr ')' Stmt ElseClause
-					{
-						$$.stmt = new Tree.If($3.expr, $5.stmt, $6.stmt, $1.loc);
-					}
+IfStmt          :   IF '(' Expr ')' Stmt ElseClause
+                    {
+                        $$.stmt = new Tree.If($3.expr, $5.stmt, $6.stmt, $1.loc);
+                    }
                 ;
 
-ElseClause      :	ELSE Stmt
-					{
-						$$.stmt = $2.stmt;
-					}
-				|	/* empty */				%prec EMPTY
-					{
-						$$ = new SemValue();
-					}
+ElseClause      :   ELSE Stmt
+                    {
+                        $$.stmt = $2.stmt;
+                    }
+                |   /* empty */             %prec EMPTY
+                    {
+                        $$ = new SemValue();
+                    }
                 ;
 
-ReturnStmt      :	RETURN Expr
-					{
-						$$.stmt = new Tree.Return($2.expr, $1.loc);
-					}
-                |	RETURN
-                	{
-                		$$.stmt = new Tree.Return(null, $1.loc);
-                	}
+ReturnStmt      :   RETURN Expr
+                    {
+                        $$.stmt = new Tree.Return($2.expr, $1.loc);
+                    }
+                |   RETURN
+                    {
+                        $$.stmt = new Tree.Return(null, $1.loc);
+                    }
                 ;
 
-PrintStmt       :	PRINT '(' ExprList ')'
-					{
-						$$.stmt = new Print($3.elist, $1.loc);
-					}
+PrintStmt       :   PRINT '(' ExprList ')'
+                    {
+                        $$.stmt = new Print($3.elist, $1.loc);
+                    }
+                ;
+GuardedIfStmt   :   IF GuardedStmts FI
+                    {
+                        $$.stmt = new Tree.Guardedif($2.slist, $2.loc);
+                    }
+                ;
+GuardedDoStmt   :   DO GuardedStmts OD
+                    {
+                        $$.stmt = new Tree.GuardedDo($2.slist, $2.loc);
+                    }
+                ;
+GuardedStmts    :   GuardedStmts GUARD GuardedStmt
+                    {
+                        $$.slist.add($3.stmt);
+                    }
+
+                |   GuardedStmt
+                    {
+                        $$ = new SemValue();
+                        $$.slist = new ArrayList<Tree>();
+                        $$.slist.add($1.stmt);
+                    }
+                ;
+
+GuardedStmt     :   Expr ':' Stmt
+                    {
+                        $$.stmt = new Tree.GuardedStmt($1.expr, $3.stmt, $1.loc);
+                    }
                 ;
 
 %%
     
-	/**
-	 * 打印当前归约所用的语法规则<br>
-	 * 请勿修改。
-	 */
+    /**
+     * 打印当前归约所用的语法规则<br>
+     * 请勿修改。
+     */
     public boolean onReduce(String rule) {
-		if (rule.startsWith("$$"))
-			return false;
-		else
-			rule = rule.replaceAll(" \\$\\$\\d+", "");
+        if (rule.startsWith("$$"))
+            return false;
+        else
+            rule = rule.replaceAll(" \\$\\$\\d+", "");
 
    	    if (rule.endsWith(":"))
     	    System.out.println(rule + " <empty>");
