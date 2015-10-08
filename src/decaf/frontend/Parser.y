@@ -450,7 +450,7 @@ PrintStmt       :   PRINT '(' ExprList ')'
                 ;
 GuardedIfStmt   :   IF GuardedStmts FI
                     {
-                        $$.stmt = new Tree.Guardedif($2.slist, $2.loc);
+                        $$.stmt = new Tree.GuardedIf($2.slist, $2.loc);
                     }
                 ;
 GuardedDoStmt   :   DO GuardedStmts OD

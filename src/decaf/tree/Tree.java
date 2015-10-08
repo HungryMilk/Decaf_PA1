@@ -670,9 +670,9 @@ public abstract class Tree {
     /**
      * A guardedIf statement
      */
-    public static class Guardedif extends Tree {
+    public static class GuardedIf extends Tree {
     	public List<Tree> GuardedStmts;
-    	public Guardedif(List<Tree> stmts, Location loc) {
+    	public GuardedIf(List<Tree> stmts, Location loc) {
 			super(GUARDIF, loc);
 			this.GuardedStmts = stmts;
 		}
@@ -1506,7 +1506,7 @@ public abstract class Tree {
             visitTree(that);
         }
         
-        public void visitGuardedIf(Guardedif that) {
+        public void visitGuardedIf(GuardedIf that) {
             visitTree(that);
         }
         

@@ -1444,7 +1444,7 @@ break;
 case 93:
 //#line 452 "Parser.y"
 {
-                        yyval.stmt = new Tree.Guardedif(val_peek(1).slist, val_peek(1).loc);
+                        yyval.stmt = new Tree.GuardedIf(val_peek(1).slist, val_peek(1).loc);
                     }
 break;
 case 94:
