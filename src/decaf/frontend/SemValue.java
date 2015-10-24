@@ -182,6 +182,9 @@ public class SemValue {
 		case Parser.STATIC:
 			msg = "keyword : static";
 			break;
+		case Parser.NUMINSTANCES:
+			msg = "keyword : numinstances";
+			break;
 
 		// 常量
 		case Parser.LITERAL:
